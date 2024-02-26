@@ -14,7 +14,6 @@ export async function createBookController(req, res) {
 
     res.status(201).json(result);
   } catch (error) {
-    console.error('Error creating book:', error.message);
     res.status(400).json({ success: false, message: error.message });
   }
 }
@@ -57,7 +56,6 @@ export async function returnBookController(req, res) {
     if (error.message === 'Book not available for return') {
       res.status(404).json({ success: false, message: error.message });
     } else {
-      console.error('Error returning book:', error.message);
       res.status(500).json({ success: false, message: 'Internal server error while returning book' });
     }
   }
@@ -70,7 +68,6 @@ export async function getUserReservedBooksController(req, res) {
     const reservedBooks = await getUserReservedBooks(userId);
     res.json({ success: true, reservedBooks });
   } catch (error) {
-    console.error('Error getting books reserved by user:', error);
     res.status(500).json({ success: false, message: 'Error getting reserved books' });
   }
 }

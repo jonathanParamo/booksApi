@@ -6,7 +6,6 @@ export async function getAllAvailableBooks() {
 
     return availableBooks;
   } catch (error) {
-    console.error('Error getting available books.:', error);
     throw error;
   }
 }
@@ -23,7 +22,6 @@ export async function createBook(title, author, imageBook, description) {
 
     return { success: true, message: 'Book created successfully', bookId: result.insertId };
   } catch (error) {
-    console.error('Error creating the book', error);
     throw error;
   }
 }
@@ -56,7 +54,7 @@ export async function reserveBook(book_id, userId, daysToReserve) {
         books.author,
         books.image_book,
         books.*,
-        reservations.user_id AS reserved_by,
+        reservations.user_id AS user_id,
         reservations.days_to_reserve,
         reservations.reservation_due_date
       FROM
@@ -70,7 +68,6 @@ export async function reserveBook(book_id, userId, daysToReserve) {
     return { success: true, message: 'Book reserved successfully', reservedBookInfo: reservedBookInfo[0] };
 
   } catch (error) {
-    console.error('Error reserving the book', error);
     throw error;
   }
 }
@@ -116,7 +113,6 @@ export async function getUserReservedBooks(userId) {
 
     return reservedBooks;
   } catch (error) {
-    console.error('Error retrieving books reserved by the user:', error);
     throw error;
   }
 }

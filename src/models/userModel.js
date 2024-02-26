@@ -34,7 +34,6 @@ export async function createUser(username, password, email) {
 };
 
 export async function authenticateUser(identifier = '', password,) {
-  console.log(password, identifier);
   try {
 
     const [rows] = await db.query(
@@ -56,13 +55,11 @@ export async function authenticateUser(identifier = '', password,) {
     `,
       [identifier, identifier]
     );
-    console.log(rows, "rows");
 
     if (rows.length === 1) {
       const user = rows[0];
 
       const passwordMatch = await bcrypt.compare(password, user.password);
-      console.log(passwordMatch);
       const secret = process.env.JWT_SECRET;
       if (passwordMatch) {
         // Check if the user has reservations

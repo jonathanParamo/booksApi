@@ -13,7 +13,6 @@ export async function signupController(req, res) {
     const result = await createUser(username, password, email);
     res.json(result);
   } catch (error) {
-    console.error('Error during user signup:', error);
 
     if (error.message === 'User with this email already exists.') {
       return res.status(409).json({ error: error.message });

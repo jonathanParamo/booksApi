@@ -22,7 +22,6 @@ export function verifyTokenMiddleware (req, res, next) {
 
     next();
   } catch (error) {
-    console.error('Error validating the token.', error.message);
     res.status(401).json({ message: 'Your session has expired.', error: error.message });
   }
 };
