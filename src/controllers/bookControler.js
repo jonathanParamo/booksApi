@@ -3,7 +3,8 @@ import {
   reserveBook,
   returnBook,
   createBook,
-  getUserReservedBooks
+  getUserReservedBooks,
+  getCategoryBooks,
 } from '../models/bookModel.js';
 
 export async function createBookController(req, res) {
@@ -72,4 +73,13 @@ export async function getUserReservedBooksController(req, res) {
   }
 }
 
+export async function getCategoryBooksController(req, res) {
+  const category = req.params.category;
+  try {
+    const categoryBooks = await getCategoryBooks(category);
+    res.json({ success: true, categoryBooks })
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'In this moment, is not available books in this category '})
+  }
+}
 

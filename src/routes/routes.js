@@ -10,6 +10,7 @@ import {
   reserveBookController,
   getUserReservedBooksController,
   returnBookController,
+  getCategoryBooksController,
 } from '../controllers/bookControler.js';
 import { verifyTokenMiddleware } from '../middlewares/middlewareToken.js';
 
@@ -23,7 +24,7 @@ router.use(verifyTokenMiddleware);
 
 router.get('/books/available', getAllAvailableBooksController);
 router.post('/books/:bookId/return/:userId', returnBookController);
-
+router.get('/books/category/:category', getCategoryBooksController);
 router.get('/reservations/:userId', getUserReservationsController);
 router.post('/books/:bookId/reserve/:userId', reserveBookController);
 router.get('/user/:userId/reserved-books', getUserReservedBooksController);
