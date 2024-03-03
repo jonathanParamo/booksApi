@@ -117,3 +117,17 @@ export async function getUserReservedBooks(userId) {
   }
 }
 
+export async function getCategoryBooks(category) {
+  try {
+    const [categories] = await pool.query('SELECT * FROM books WHERE category = ? AND is_available = 1;',
+    [category]
+    );
+    if (categories.length > 0 && Array.isArray(categories)) {
+      return categories;
+    } else {
+      return ('this category not have books');
+    }
+  } catch (error) {
+    throw error;
+  }
+}
