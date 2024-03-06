@@ -18,7 +18,7 @@ const router = express.Router();
 
 router.post('/signup', signupController);
 router.post('/signin', signinController);
-router.post('/books/create', createBookController);
+router.post('/books/create/:userId', createBookController);
 
 router.use(verifyTokenMiddleware);
 

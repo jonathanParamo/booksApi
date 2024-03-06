@@ -10,17 +10,26 @@ export async function getAllAvailableBooks() {
   }
 }
 
-export async function createBook(title, author, imageBook, description) {
+export async function createBook(user_id, title, author, imageBook, description, category) {
   try {
-    if (!title || !author || !imageBook || !description) {
+    if (user_id !== 2) {
+      throw new Error('Unauthorized: User is not allowed to create books');
+    }
+
+    if (!title || !author || !imageBook || !description || !category) {
       throw new Error('All fields are required');
     }
 
-    const query = 'INSERT INTO books (title, author, image_book, description, days_to_reserve) VALUES (?, ?, ?, ?, ?)'
-    const values = [title, author, imageBook, description, 0]
-    const [result] = await pool.query(query, values);
+    const insertQuery = 'INSERT INTO books (title, author, image_book, description, days_to_reserve, category) VALUES (?, ?, ?, ?, ?, ?)';
+    const insertValues = [title, author, imageBook, description, 0, category];
+    const [insertResult] = await pool.query(insertQuery, insertValues);
+    const bookId = insertResult.insertId;
 
-    return { success: true, message: 'Book created successfully', bookId: result.insertId };
+    const selectQuery = 'SELECT * FROM books WHERE book_id = ?';
+    const [selectResult] = await pool.query(selectQuery, [bookId]);
+    const createdBook = selectResult[0];
+
+    return { success: true, message: 'Book created successfully', createdBook };
   } catch (error) {
     throw error;
   }
@@ -28,22 +37,22 @@ export async function createBook(title, author, imageBook, description) {
 
 export async function reserveBook(book_id, userId, daysToReserve) {
   try {
-    // Verificar si el libro está disponible
+    // Check if the book is available
     const [book] = await pool.query('SELECT * FROM books WHERE book_id = ? AND is_available = true', [book_id]);
     if (book.length === 0) {
       return { success: false, message: 'The book is not available for reservation.' };
     }
 
-    // Calcular la fecha de vencimiento de la reserva
+    // Calculate the expiration date of the reservation
     const reservationDueDate = new Date();
     reservationDueDate.setDate(reservationDueDate.getDate() + daysToReserve);
 
-    // Realizar la reserva en la tabla 'reservations'
+    // Make the reservation in the 'reservations' table
     const reservationQuery = 'INSERT INTO reservations (user_id, book_id, days_to_reserve, reservation_due_date) VALUES (?, ?, ?, ?)';
     const reservationValues = [userId, book_id, daysToReserve, reservationDueDate];
     await pool.query(reservationQuery, reservationValues);
 
-    // Realizar la reserva en la tabla books
+    // Make the reservation in the 'books' table
     const updateBookQuery = 'UPDATE books SET is_available = false, reserved_by = ?, days_to_reserve = ?, reservation_due_date = ? WHERE book_id = ?';
     const updateBookValues = [userId, daysToReserve, reservationDueDate, book_id];
     await pool.query(updateBookQuery, updateBookValues);
@@ -75,12 +84,12 @@ export async function reserveBook(book_id, userId, daysToReserve) {
 export async function returnBook(bookId, userId) {
   try {
     const [book] = await pool.query('SELECT * FROM books WHERE book_id = ?', [bookId]);
-    // Verificar si el libro está actualmente reservado por el usuario que lo está devolviendo
+    // Check if the book is currently reserved by the user who is returning it
     if (book.length === 0 || book[0].is_available !== 0 || book[0].reserved_by !== userId) {
       throw new Error('Book not available for return');
     }
 
-    // Devolver el libro y actualizar la información relacionada
+    // Return the book and update the related information
     const updateQuery = `
       UPDATE books SET is_available = true,
       days_to_reserve = NULL,
@@ -89,7 +98,7 @@ export async function returnBook(bookId, userId) {
     const updateValues = [bookId];
     await pool.query(updateQuery, updateValues);
 
-    // Desasociar la reserva del usuario en la tabla de reservas
+    // Disassociate the reservation from the user in the reservations table
     const deleteReservationQuery = 'DELETE FROM reservations WHERE book_id = ? AND user_id = ?';
     const deleteReservationValues = [bookId, userId];
     await pool.query(deleteReservationQuery, deleteReservationValues);
