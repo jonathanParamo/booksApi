@@ -8,10 +8,10 @@ import {
 } from '../models/bookModel.js';
 
 export async function createBookController(req, res) {
-  const { title, author, imageBook, description } = req.body;
-
+  const user_id = parseInt(req.params.userId, 10);
+  const { title, author, imageBook, description, category } = req.body;
   try {
-    const result = await createBook(title, author, imageBook, description);
+    const result = await createBook(user_id, title, author, imageBook, description, category);
 
     res.status(201).json(result);
   } catch (error) {
