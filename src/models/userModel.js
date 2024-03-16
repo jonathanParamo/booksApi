@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 export async function createUser(username, password, email) {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    const [existingUser] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    const [existingUser] = await pool.query('SELECT * FROM users WHERE email = ? OR username = ?', [email, username]);
 
     if (existingUser.length > 0) {
        throw new Error('User with this email already exists.');
@@ -16,7 +16,8 @@ export async function createUser(username, password, email) {
 
     const [result] = await pool.query(query, values);
 
-    const [newUser] = await pool.query('SELECT * FROM users WHERE user_id = ?', [result.insertId]);
+    const [newUser] = await pool.query('select user_id, username, email, profile_image FROM users where user_id = ?', [result.insertId]);
+
     const secret = process.env.JWT_SECRET
 
     const token = jwt.sign({ userId: newUser[0].user_id, username: newUser[0].username }, secret , { expiresIn: '1h' });
@@ -79,9 +80,9 @@ export async function authenticateUser(identifier = '', password,) {
           const response = {
             success: true,
             reservedBooks,
-            userData : {user},
+            userData : { ...user, password: undefined },
             token,
-            message: 'Login successful'
+            message: 'Login successful.'
           };
 
           return response;
@@ -90,7 +91,7 @@ export async function authenticateUser(identifier = '', password,) {
           const token = jwt.sign({ userId: user.id, username: user.username }, secret, { expiresIn: '1h' });
           const response = {
             success: true,
-            user,
+            user : { ...user, password: undefined },
             token,
             message: 'Login successful'
           };
